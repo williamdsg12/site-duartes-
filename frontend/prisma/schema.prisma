@@ -1,0 +1,169 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("ADMIN")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  logs         AuditLog[]
+}
+
+model SiteInfo {
+  id           String   @id @default("default")
+  companyName  String   @default("Duarte's Limpezas, Desentupidora e Manutenções")
+  slogan       String   @default("Soluções completas em limpeza, desentupimento e manutenção")
+  description  String   @default("Empresa especializada em limpeza de caixa d'água, desentupimento, hidrojateamento, limpeza de fossa, caixa de gordura, dedetização e manutenção hidráulica e elétrica em Paranavaí e Região Noroeste do Paraná.")
+  aboutText    String   @default("A Duarte's Limpezas, Desentupidora e Manutenções atua há 5 anos oferecendo serviços especializados para residências, empresas e condomínios.")
+  phoneDisplay String   @default("(44) 99706-9677")
+  phoneRaw     String   @default("5544997069677")
+  email        String   @default("duarteslimpezacaixadeagua@gmail.com")
+  address      String   @default("Av. Paulino Rech, 203")
+  city         String   @default("Paranavaí - PR")
+  cep          String   @default("CEP 87702-430")
+  hours        String   @default("Segunda a Sexta, 08h às 18h")
+  region       String   @default("Paranavaí e toda Região Noroeste do Paraná")
+  updatedAt    DateTime @updatedAt
+}
+
+model HeroBanner {
+  id          String   @id @default("default")
+  badgeText   String   @default("Há 5 anos em Paranavaí e Região")
+  titleLine1  String   @default("Duarte's Limpezas,")
+  titleLine2  String   @default("Desentupidora e")
+  titleLine3  String   @default("Manutenções")
+  subtitle    String   @default("Soluções completas em limpeza, desentupimento e manutenção para residências, empresas e condomínios.")
+  videoUrl    String   @default("/assets/hero-video.mp4")
+  posterUrl   String   @default("/assets/gallery/g4.jpg")
+  button1Text String   @default("Solicitar Orçamento")
+  button1Link String   @default("https://wa.me/5544997069677?text=Ol%C3%A1!%20Gostaria%20de%20solicitar%20um%20or%C3%A7amento%20com%20a%20Duarte's.")
+  button2Text String   @default("Falar no WhatsApp")
+  button2Link String   @default("https://wa.me/5544997069677?text=Ol%C3%A1!%20Vim%20pelo%20site%20da%20Duarte's%20e%20gostaria%20de%20solicitar%20um%20or%C3%A7amento.")
+  updatedAt   DateTime @updatedAt
+}
+
+model ServiceItem {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  icon        String   @default("Wrench")
+  buttonText  String   @default("Solicitar orçamento")
+  buttonLink  String?
+  order       Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model GalleryMedia {
+  id          String   @id @default(uuid())
+  title       String?
+  src         String
+  fullSrc     String?
+  alt         String
+  permalink   String?
+  order       Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model TestimonialItem {
+  id          String   @id @default(uuid())
+  name        String
+  role        String
+  text        String
+  rating      Int      @default(5)
+  photo       String?
+  order       Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model FaqItem {
+  id          String   @id @default(uuid())
+  question    String
+  answer      String
+  order       Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ServiceAreaConfig {
+  id          String   @id @default("default")
+  badgeText   String   @default("Área de Atendimento")
+  title       String   @default("Atendemos Paranavaí e toda a Região Noroeste do Paraná")
+  description String   @default("Nossa equipe se desloca com agilidade para atender residências, empresas e condomínios em toda a região.")
+  citiesJson  String   @default("[\"Paranavaí\",\"Nova Esperança\",\"Alto Paraná\",\"Mandaguaçu\",\"Loanda\",\"Terra Rica\",\"Cruzeiro do Sul\",\"Paraíso do Norte\",\"Tamboara\",\"Amaporã\"]")
+  mapUrl      String   @default("https://www.google.com/maps?q=Paranava%C3%AD,PR&z=11&output=embed")
+  updatedAt   DateTime @updatedAt
+}
+
+model SocialConfig {
+  id          String   @id @default("default")
+  instagram   String   @default("https://instagram.com/duarteslimpezacaixadeagua")
+  instaToken  String   @default("")
+  facebook    String   @default("https://facebook.com/duarteslimpezacaixadeagua")
+  whatsapp    String   @default("https://wa.me/5544997069677")
+  youtube     String   @default("")
+  tiktok      String   @default("")
+  linkedin    String   @default("")
+  activeInsta Boolean  @default(true)
+  activeFb    Boolean  @default(true)
+  activeWa    Boolean  @default(true)
+  activeYt    Boolean  @default(false)
+  activeTt    Boolean  @default(false)
+  activeLi    Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+}
+
+model SeoConfig {
+  id              String   @id @default("default")
+  metaTitle       String   @default("Duarte's Limpezas | Desentupidora em Paranavaí")
+  metaDescription String   @default("Empresa especializada em limpeza de caixa d'água, desentupimento, hidrojateamento, limpeza de fossa, caixa de gordura, dedetização e manutenção hidráulica e elétrica em Paranavaí e Região Noroeste do Paraná.")
+  keywords        String   @default("desentupidora Paranavaí, limpeza caixa d'água Paranavaí, hidrojateamento Paranavaí, limpeza caixa de gordura, limpeza de fossa, dedetização Paranavaí, manutenção hidráulica, manutenção elétrica")
+  ogTitle         String   @default("Duarte's Limpezas | Desentupidora em Paranavaí")
+  ogDescription   String   @default("Limpeza de caixa d'água, desentupimento, hidrojateamento, dedetização e manutenção hidráulica e elétrica em Paranavaí e Região Noroeste.")
+  ogImage         String   @default("/assets/logo-hero.png")
+  twitterCard     String   @default("summary_large_image")
+  canonicalUrl    String   @default("https://manutencao-duartes.preview.emergentagent.com/")
+  robots          String   @default("index, follow")
+  schemaLd        String   @default("{\"@context\":\"https://schema.org\",\"@type\":\"LocalBusiness\",\"name\":\"Duarte's Limpezas, Desentupidora e Manutenções\",\"image\":\"/assets/logo-hero.png\",\"telephone\":\"+5544997069677\",\"email\":\"duarteslimpezacaixadeagua@gmail.com\",\"address\":{\"@type\":\"PostalAddress\",\"streetAddress\":\"Av. Paulino Rech, 203\",\"addressLocality\":\"Paranavaí\",\"addressRegion\":\"PR\",\"postalCode\":\"87702-430\",\"addressCountry\":\"BR\"},\"areaServed\":\"Paranavaí e Região Noroeste do Paraná\",\"openingHours\":\"Mo-Fr 08:00-18:00\"}")
+  updatedAt       DateTime @updatedAt
+}
+
+model SiteSettings {
+  id             String   @id @default("default")
+  logoUrl        String   @default("/assets/logo.png")
+  logoHeroUrl    String   @default("/assets/logo-hero.png")
+  faviconUrl     String   @default("/assets/logo.png")
+  primaryColor   String   @default("#0B3C5D")
+  accentColor    String   @default("#FFC107")
+  footerText     String   @default("Há 5 anos oferecendo soluções completas em limpeza, desentupimento e manutenção.")
+  copyrightText  String   @default("© 2026 Duarte's Limpezas, Desentupidora e Manutenções. Todos os direitos reservados.")
+  waButtonText   String   @default("Orçamento Rápido")
+  callButtonText String   @default("Ligar Agora")
+  updatedAt      DateTime @updatedAt
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  action    String
+  userId    String?
+  userEmail String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  ip        String   @default("127.0.0.1")
+  details   String?
+  createdAt DateTime @default(now())
+}

@@ -1,0 +1,157 @@
+{
+  "brand_identity": {
+    "name": "Duarte's Limpezas, Desentupidora e Manutenções",
+    "concept": "Engineered Clean & Industrial Elegance",
+    "tone": "Premium, Authoritative, Trustworthy, Precision",
+    "theme": "Strictly Light Mode (Dark mode disabled)",
+    "art_direction": "High-contrast architectural layout meets fluid water-like momentum. Deep ocean blues contrasting with vast, sterile white spaces. Yellow acts as the high-visibility kinetic trigger. The site must feel like an elite facility management agency, not a generic local plumber."
+  },
+  "typography": {
+    "fonts": {
+      "heading": "'Cabinet Grotesk', sans-serif (Premium, authoritative, slightly industrial)",
+      "body": "'Satoshi', sans-serif (Clean, modernist, highly legible)"
+    },
+    "scale": {
+      "h1": "text-5xl md:text-6xl lg:text-7xl tracking-tighter leading-none font-bold",
+      "h2": "text-4xl md:text-5xl lg:text-5xl tracking-tight leading-tight font-bold",
+      "h3": "text-2xl md:text-3xl tracking-tight font-semibold",
+      "body_lg": "text-lg md:text-xl leading-relaxed text-slate-700",
+      "body": "text-base leading-relaxed text-slate-600",
+      "overline": "text-xs md:text-sm uppercase tracking-[0.2em] font-semibold text-primary"
+    },
+    "rules": {
+      "no_defaults": "DO NOT use Inter, Roboto, or Space Grotesk. Embed Cabinet Grotesk and Satoshi via Fontshare or local assets.",
+      "headings": "Never center headings unless explicitly in a symmetrical section like Testimonials. Left-align for editorial authority."
+    }
+  },
+  "colors": {
+    "primary": {
+      "DEFAULT": "#0B3C5D",
+      "description": "Deep Blue. Used for main headings, footer, strong structural elements.",
+      "hover": "#072A42"
+    },
+    "secondary": {
+      "DEFAULT": "#175C8A",
+      "description": "Medium Blue. Used for secondary active states, icons, subtle highlights."
+    },
+    "accent": {
+      "DEFAULT": "#FFC107",
+      "description": "Warning/Action Yellow. Used EXCLUSIVELY for CTAs, prominent buttons, and kinetic accents.",
+      "hover": "#E0A800",
+      "text_contrast": "#0B3C5D"
+    },
+    "background": {
+      "default": "#FFFFFF",
+      "surface": "#F8F9FA",
+      "surface_hover": "#F1F5F9"
+    },
+    "text": {
+      "main": "#0F172A",
+      "muted": "#475569",
+      "inverse": "#FFFFFF"
+    }
+  },
+  "layout_and_spacing": {
+    "spacing_scale": {
+      "section_y": "py-24 md:py-32",
+      "container": "max-w-7xl mx-auto px-6 md:px-12",
+      "gap_standard": "gap-8 md:gap-12",
+      "gap_large": "gap-16 md:gap-24"
+    },
+    "grid_system": {
+      "bento": "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6",
+      "standard": "grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24 items-center"
+    },
+    "surface_treatment": {
+      "cards": "bg-white border border-slate-100 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)]",
+      "navbar": "bg-white/80 backdrop-blur-xl border-b border-slate-100"
+    }
+  },
+  "motion_and_interaction": {
+    "scroll": {
+      "library": "@studio-freight/lenis",
+      "config": "{ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), orientation: 'vertical', smoothWheel: true }"
+    },
+    "framer_motion": {
+      "text_reveal_line": {
+        "wrapper": "overflow-hidden",
+        "initial": { "y": "100%", "opacity": 0, "rotate": 2 },
+        "animate": { "y": 0, "opacity": 1, "rotate": 0 },
+        "transition": { "duration": 0.9, "ease": [0.25, 1, 0.5, 1] }
+      },
+      "stagger_children": {
+        "transition": { "staggerChildren": 0.1 }
+      },
+      "fade_up": {
+        "initial": { "y": 40, "opacity": 0 },
+        "whileInView": { "y": 0, "opacity": 1 },
+        "viewport": { "once": true, "margin": "-100px" },
+        "transition": { "duration": 0.7, "ease": [0.25, 1, 0.5, 1] }
+      },
+      "parallax_image": {
+        "scrollYProgress": "useScroll()",
+        "y": "useTransform(scrollYProgress, [0, 1], ['0%', '20%'])"
+      }
+    },
+    "micro_interactions": {
+      "button_hover": "scale-[1.02] active:scale-[0.98] transition-transform duration-300",
+      "card_hover": "hover:-translate-y-2 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:border-primary/20 transition-all duration-400 ease-out"
+    }
+  },
+  "component_specifications": {
+    "navbar": {
+      "design": "Fixed top, ultra-clean. Left: Logo. Center: Hidden on mobile, spaced links on desktop. Right: CTA Button (Yellow).",
+      "behavior": "Glassmorphism background `bg-white/80 backdrop-blur-xl`. Shrinks slightly on scroll down."
+    },
+    "hero": {
+      "design": "Kinetic, immersive. Full viewport height (`min-h-[90vh]`). Background is the provided video.",
+      "overlay": "bg-gradient-to-r from-[#0B3C5D]/90 via-[#0B3C5D]/70 to-transparent absolute inset-0 z-0",
+      "content": "Left-aligned, massive typography. Signature on-load moment: Text lines wrapped in overflow-hidden divs, sliding up revealing 'Duarte's', 'Excelência em', 'Manutenção'.",
+      "assets": "Video: `/assets/hero-video.mp4`, Logo variant if needed: `/assets/logo-hero.png`."
+    },
+    "marquee": {
+      "design": "Slow editorial marquee passing right below the hero or above footer.",
+      "content": "• LÍDERES EM MANUTENÇÃO • ATENDIMENTO 24H • PARANAVAÍ E REGIÃO • HIDROJATEAMENTO •",
+      "style": "bg-primary text-white py-4 text-sm font-semibold tracking-[0.2em] uppercase overflow-hidden whitespace-nowrap"
+    },
+    "services_section": {
+      "layout": "Grid (8 cards). 4 cols desktop, 2 tablet, 1 mobile.",
+      "card_design": "Clean white cards, generous padding (`p-8`). Top: Lucide icon in a light blue circle (`bg-blue-50 text-secondary`). Middle: H4 Title + short description. Bottom: WhatsApp link with arrow.",
+      "services": ["Limpeza de Caixa d'Água", "Desentupimento", "Hidrojateamento", "Limpeza de Caixa de Gordura", "Limpeza de Fossa", "Dedetização", "Manutenção Hidráulica", "Manutenção Elétrica"]
+    },
+    "differentials": {
+      "layout": "Bento Grid or Masonry for 10 items.",
+      "design": "Mix of small square cards (icon + title) and horizontal cards. Use soft background `#F8F9FA` for the section. Cards are pure white.",
+      "icons": "Use distinct, thin Lucide icons. Stroke width 1.5."
+    },
+    "how_it_works": {
+      "layout": "Vertical timeline with 5 steps.",
+      "design": "A solid line `border-l-2 border-slate-200` running down the left. Step markers are white circles that fill with `#FFC107` (Framer Motion scroll trigger).",
+      "typography": "Steps should look like chapters. '01', '02' in large, light typography (`text-primary/20 text-6xl font-bold font-heading`)."
+    },
+    "gallery": {
+      "design": "Premium masonry or CSS grid layout. Images have `overflow-hidden` wrappers with subtle `scale` on hover. Use lightbox for full view.",
+      "treatment": "Images should have a very subtle contrast boost via CSS (`contrast-105 saturate-105`) to look highly professional.",
+      "assets": "`/assets/gallery/g1.jpg`, `/assets/gallery/g2.jpg`, `/assets/gallery/g3.jpg`, `/assets/gallery/g4.jpg`, `/assets/gallery/g5.jpg`"
+    },
+    "testimonials": {
+      "design": "Horizontal scroll or standard grid of 3 premium cards. 5-star icons in `#FFC107`. Text `text-lg text-slate-700 italic`."
+    },
+    "faq": {
+      "design": "Accordion style (Shadcn style or custom framer-motion). Clean lines `border-b border-slate-200`. No boxes, just elegant typography expanding smoothly."
+    },
+    "footer": {
+      "design": "Massive, dark, architectural footer. `bg-primary text-white`. Large typography CTA 'Pronto para resolver seu problema?'.",
+      "map": "Embed Paranavaí map in a rounded overflow-hidden container with grayscale/blue filter if possible, or clean standard map.",
+      "logo": "Use `/assets/logo.png`"
+    },
+    "floating_elements": {
+      "whatsapp": "Fixed bottom right. `z-50`. Standard WA Green (`#25D366`) for conversion recognition, but premium pill shape with Lucide Icon and 'Orçamento Rápido' text on desktop. Pulse animation.",
+      "back_to_top": "Appears after 500px scroll. Minimalist circle."
+    }
+  },
+  "universal_guidelines": {
+    "testing": "All interactive elements MUST include `data-testid` attribute (e.g., `data-testid='btn-whatsapp-hero'`).",
+    "anti_ai_slop": "DO NOT use generic centered text with basic gradients. DO NOT use generic AI emojis. Create depth with real CSS shadows and structural padding. Never apply `transition: all`. Use `.js` extension for components. Maintain high contrast text."
+  }
+}
