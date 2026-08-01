@@ -1,57 +1,51 @@
 #!/bin/bash
 
-echo ""
+# =======================================
+# Deploy Automático GitHub
+# Duarte's Limpezas
+# =======================================
+
+clear
+
 echo "======================================="
-echo " Deploy GitHub - Duarte's Site"
+echo "🚀 Deploy Automático GitHub"
 echo "======================================="
 echo ""
 
-git add .
-
-read -p "Mensagem do commit: " message
-
-if [ -z "$message" ]; then
-    message="Atualização do projeto"
+# Verifica se existe alteração
+if git diff --quiet && git diff --cached --quiet; then
+    echo "✅ Nenhuma alteração encontrada."
+    exit 0
 fi
 
-git commit -m "$message"
-
-git push origin main
-
-echo ""
-echo "======================================="
-echo "Deploy realizado com sucesso!"
-echo "======================================="
-# =======================================
-#   SCRIPT AUTOMÁTICO - DEPLOY GitHub
-# =======================================
-
-echo ""
-echo "======================================="
-echo "Deploy GitHub - Duarte's Site"
-echo "======================================="
-echo ""
-
-# 1. Adicionar todos os arquivos
-echo "🚀 Adicionando arquivos..."
+echo "📦 Adicionando arquivos..."
 git add .
 
-# 2. Perguntar mensagem do commit
-echo ""
-read -p "Digite a mensagem do commit: " mensagem
-
-# 3. Criar commit
 echo ""
 echo "📝 Criando commit..."
-git commit -m "$mensagem"
 
-# 4. Enviar para o GitHub
+git commit -m "Atualização automática - $(date '+%d/%m/%Y %H:%M')"
+
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "❌ Erro ao criar commit."
+    exit 1
+fi
+
 echo ""
 echo "⬆️ Enviando para o GitHub..."
+
 git push origin main
 
-# 5. Mensagem de sucesso
-echo ""
-echo "======================================="
-echo "✅ Deploy realizado com sucesso!"
-echo "======================================="
+if [ $? -eq 0 ]; then
+    echo ""
+    echo "======================================="
+    echo "✅ Deploy realizado com sucesso!"
+    echo "======================================="
+else
+    echo ""
+    echo "======================================="
+    echo "❌ Erro ao enviar para o GitHub."
+    echo "======================================="
+    exit 1
+fi
