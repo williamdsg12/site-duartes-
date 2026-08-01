@@ -15,37 +15,57 @@ export async function GET() {
       seo,
       settings,
     ] = await Promise.all([
-      prisma.siteInfo.findUnique({ where: { id: "default" } }),
-      prisma.heroBanner.findUnique({ where: { id: "default" } }),
-      prisma.serviceItem.findMany({ where: { active: true }, orderBy: { order: "asc" } }),
-      prisma.galleryMedia.findMany({ where: { active: true }, orderBy: { order: "asc" } }),
-      prisma.testimonialItem.findMany({ where: { active: true }, orderBy: { order: "asc" } }),
-      prisma.faqItem.findMany({ where: { active: true }, orderBy: { order: "asc" } }),
-      prisma.serviceAreaConfig.findUnique({ where: { id: "default" } }),
-      prisma.socialConfig.findUnique({ where: { id: "default" } }),
-      prisma.seoConfig.findUnique({ where: { id: "default" } }),
-      prisma.siteSettings.findUnique({ where: { id: "default" } }),
+      prisma.siteInfo.findUnique({ where: { id: "default" } }).catch(() => null),
+      prisma.heroBanner.findUnique({ where: { id: "default" } }).catch(() => null),
+      prisma.serviceItem.findMany({ where: { active: true }, orderBy: { order: "asc" } }).catch(() => []),
+      prisma.galleryMedia.findMany({ where: { active: true }, orderBy: { order: "asc" } }).catch(() => []),
+      prisma.testimonialItem.findMany({ where: { active: true }, orderBy: { order: "asc" } }).catch(() => []),
+      prisma.faqItem.findMany({ where: { active: true }, orderBy: { order: "asc" } }).catch(() => []),
+      prisma.serviceAreaConfig.findUnique({ where: { id: "default" } }).catch(() => null),
+      prisma.socialConfig.findUnique({ where: { id: "default" } }).catch(() => null),
+      prisma.seoConfig.findUnique({ where: { id: "default" } }).catch(() => null),
+      prisma.siteSettings.findUnique({ where: { id: "default" } }).catch(() => null),
     ]);
 
+    let parsedCities: string[] = [];
+    if (serviceArea?.citiesJson) {
+      try {
+        parsedCities = JSON.parse(serviceArea.citiesJson);
+      } catch {
+        parsedCities = [];
+      }
+    }
+
     return NextResponse.json({
-      info,
-      hero,
-      services,
-      gallery,
-      testimonials,
-      faqs,
+      info: info || null,
+      hero: hero || null,
+      services: services || [],
+      gallery: gallery || [],
+      testimonials: testimonials || [],
+      faqs: faqs || [],
       serviceArea: serviceArea
         ? {
             ...serviceArea,
-            cities: serviceArea.citiesJson ? JSON.parse(serviceArea.citiesJson) : [],
+            cities: parsedCities,
           }
         : null,
-      social,
-      seo,
-      settings,
+      social: social || null,
+      seo: seo || null,
+      settings: settings || null,
     });
   } catch (error) {
     console.error("Failed to fetch site data:", error);
-    return NextResponse.json({ error: "Failed to load dynamic site data" }, { status: 500 });
+    return NextResponse.json({
+      info: null,
+      hero: null,
+      services: [],
+      gallery: [],
+      testimonials: [],
+      faqs: [],
+      serviceArea: null,
+      social: null,
+      seo: null,
+      settings: null,
+    });
   }
 }

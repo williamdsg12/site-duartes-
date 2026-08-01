@@ -13,14 +13,12 @@ function cleanInstagramUsername(urlOrHandle: string): string {
 
 export async function GET() {
   try {
-    // 1. Fetch configured Instagram URL/handle from SocialConfig in DB
-    const social = await prisma.socialConfig.findUnique({ where: { id: "default" } });
+    const social = await prisma.socialConfig.findUnique({ where: { id: "default" } }).catch(() => null);
     const rawInsta = social?.instagram || "https://instagram.com/duarteslimpezacaixadeagua";
     const username = cleanInstagramUsername(rawInsta);
     const profileUrl = `https://instagram.com/${username}`;
 
-    // 2. Check if official Graph API Token is configured in environment
-    const token = process.env.INSTAGRAM_ACCESS_TOKEN || process.env.INSTAGRAM_TOKEN;
+    const token = social?.instaToken || process.env.INSTAGRAM_ACCESS_TOKEN || process.env.INSTAGRAM_TOKEN;
     const userId = process.env.INSTAGRAM_USER_ID || "me";
 
     if (token) {
@@ -41,21 +39,19 @@ export async function GET() {
             like_count: m.like_count || null,
           }));
 
-          return NextResponse.json(
-            { configured: true, username, profileUrl, items },
-            { headers: { "Cache-Control": "s-maxage=1800, stale-while-revalidate=3600" } }
-          );
+          return NextResponse.json({ configured: true, username, profileUrl, items });
         }
       } catch (e) {
         console.error("Instagram Graph API Fetch Error:", e);
       }
     }
 
-    // 3. Fallback: Fetch DB gallery media uploaded via /admin/gallery or seeded
-    const galleryItems = await prisma.galleryMedia.findMany({
-      where: { active: true },
-      orderBy: { order: "asc" },
-    });
+    const galleryItems = await prisma.galleryMedia
+      .findMany({
+        where: { active: true },
+        orderBy: { order: "asc" },
+      })
+      .catch(() => []);
 
     const items = galleryItems.map((g) => ({
       id: g.id,
@@ -64,7 +60,7 @@ export async function GET() {
       media_url: g.src,
       thumbnail_url: g.src,
       permalink: g.permalink || profileUrl,
-      timestamp: g.createdAt.toISOString(),
+      timestamp: g.createdAt ? g.createdAt.toISOString() : undefined,
       like_count: null,
     }));
 
@@ -76,14 +72,11 @@ export async function GET() {
     });
   } catch (error) {
     console.error("Instagram Feed API Error:", error);
-    return NextResponse.json(
-      {
-        configured: false,
-        username: "duarteslimpezacaixadeagua",
-        profileUrl: "https://instagram.com/duarteslimpezacaixadeagua",
-        items: [],
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      configured: false,
+      username: "duarteslimpezacaixadeagua",
+      profileUrl: "https://instagram.com/duarteslimpezacaixadeagua",
+      items: [],
+    });
   }
 }
