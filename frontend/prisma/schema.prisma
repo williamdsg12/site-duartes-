@@ -113,7 +113,6 @@ model ServiceAreaConfig {
 model SocialConfig {
   id          String   @id @default("default")
   instagram   String   @default("https://instagram.com/duarteslimpezacaixadeagua")
-  instaToken  String   @default("")
   facebook    String   @default("https://facebook.com/duarteslimpezacaixadeagua")
   whatsapp    String   @default("https://wa.me/5544997069677")
   youtube     String   @default("")
