@@ -80,3 +80,13 @@ memory/test_credentials.md
 
 # Mobile development
 android-sdk/
+
+# Next.js
+frontend/.next/
+frontend/out/
+
+# Dependências
+frontend/node_modules/
+
+# Vercel
+frontend/.vercel/
