@@ -1,51 +1,31 @@
 #!/bin/bash
 
-# =======================================
-# Deploy Automático GitHub
-# Duarte's Limpezas
-# =======================================
-
-clear
-
-echo "======================================="
-echo "🚀 Deploy Automático GitHub"
-echo "======================================="
+echo ""
+echo "=========================================="
+echo "🚀 Deploy Automático - Duarte's Limpezas"
+echo "=========================================="
 echo ""
 
-# Verifica se existe alteração
-if git diff --quiet && git diff --cached --quiet; then
-    echo "✅ Nenhuma alteração encontrada."
-    exit 0
-fi
+cd frontend || exit
 
-echo "📦 Adicionando arquivos..."
+echo "🏗️  Build..."
+npm run build || exit 1
+
+cd ..
+
+echo ""
+echo "📦 Git Add..."
 git add .
 
 echo ""
-echo "📝 Criando commit..."
-
-git commit -m "Atualização automática - $(date '+%d/%m/%Y %H:%M')"
-
-if [ $? -ne 0 ]; then
-    echo ""
-    echo "❌ Erro ao criar commit."
-    exit 1
-fi
+echo "📝 Commit..."
+git commit -m "Atualização automática $(date '+%d/%m/%Y %H:%M')" || echo "Sem alterações."
 
 echo ""
-echo "⬆️ Enviando para o GitHub..."
-
+echo "⬆️ Git Push..."
 git push origin main
 
-if [ $? -eq 0 ]; then
-    echo ""
-    echo "======================================="
-    echo "✅ Deploy realizado com sucesso!"
-    echo "======================================="
-else
-    echo ""
-    echo "======================================="
-    echo "❌ Erro ao enviar para o GitHub."
-    echo "======================================="
-    exit 1
-fi
+echo ""
+echo "=========================================="
+echo "✅ Site publicado!"
+echo "=========================================="
