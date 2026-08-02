@@ -50,4 +50,4 @@ git push origin "$BRANCH"
 
 echo -e "${VERDE}✔ Atualização enviada com sucesso!${SEM_COR}"
 echo -e "${VERDE}✔ A Vercel deve iniciar o deploy automaticamente em instantes.${SEM_COR}"
-echo -e "${AMARELO}   Acompanhe em: https://vercel.com/williamdsg12-gmailcoms-projects/site-duartes/deployments${SEM_COR}"
+echo -e "${AMARELO}   Acompanhe em: https://vercel.com/williamdsg12s-projects/site-duartes/deployments${SEM_COR}"
