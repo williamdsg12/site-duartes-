@@ -1,98 +1,53 @@
 #!/bin/bash
 
-# ==========================================
-# Agência - Deploy Automático
-# GitHub + Vercel
-# ==========================================
+# =========================================================
+#  deploy.sh - Envia as atualizações do projeto para o GitHub
+#  (a Vercel detecta o push automaticamente e faz o deploy)
+# =========================================================
+#
+#  Como usar:
+#    ./deploy.sh "mensagem do commit"
+#
+#  Se não passar mensagem, ele usa uma automática com data/hora.
+# =========================================================
 
-clear
+set -e  # para o script se algum comando der erro
 
-PROJECT_NAME="Duarte's Limpezas"
+# Cores para deixar a saída mais fácil de ler
+VERDE='\033[0;32m'
+AMARELO='\033[1;33m'
+VERMELHO='\033[0;31m'
+SEM_COR='\033[0m'
 
-echo ""
-echo "=========================================="
-echo "🚀 Deploy Automático - $PROJECT_NAME"
-echo "=========================================="
-echo ""
+echo -e "${AMARELO}==> Verificando status do repositório...${SEM_COR}"
+git status --short
 
-# Verifica se está em um repositório Git
-if [ ! -d ".git" ]; then
-    echo "❌ Este diretório não é um repositório Git."
-    exit 1
+# Se não houver nenhuma mudança, avisa e para
+if [ -z "$(git status --porcelain)" ]; then
+  echo -e "${VERMELHO}Nenhuma alteração encontrada. Nada para enviar.${SEM_COR}"
+  exit 0
 fi
 
-# Verifica alterações
-if git diff --quiet && git diff --cached --quiet; then
-    echo "✅ Nenhuma alteração encontrada."
-    exit 0
+# Descobre a branch atual automaticamente
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+echo -e "${AMARELO}==> Branch atual: ${BRANCH}${SEM_COR}"
+
+# Monta a mensagem do commit (usa a que foi passada, ou gera uma padrão)
+if [ -n "$1" ]; then
+  MENSAGEM="$1"
+else
+  MENSAGEM="Atualização automática - $(date '+%d/%m/%Y %H:%M')"
 fi
 
-echo "🏗️  Executando Build..."
-echo ""
+echo -e "${AMARELO}==> Adicionando arquivos alterados...${SEM_COR}"
+git add -A
 
-npm run build
+echo -e "${AMARELO}==> Criando commit: \"${MENSAGEM}\"${SEM_COR}"
+git commit -m "$MENSAGEM"
 
-if [ $? -ne 0 ]; then
-    echo ""
-    echo "❌ Build falhou."
-    echo "Deploy cancelado."
-    exit 1
-fi
+echo -e "${AMARELO}==> Enviando para o GitHub (origin/${BRANCH})...${SEM_COR}"
+git push origin "$BRANCH"
 
-echo ""
-echo "✅ Build OK"
-echo ""
-
-echo "📦 Git Add..."
-git add .
-
-echo ""
-echo "📝 Commit automático..."
-
-COMMIT_MSG="Atualização automática - $(date '+%d/%m/%Y %H:%M:%S')"
-
-git commit -m "$COMMIT_MSG"
-
-if [ $? -ne 0 ]; then
-    echo ""
-    echo "ℹ️ Nada para commitar."
-fi
-
-echo ""
-echo "⬆️ Git Push..."
-
-git push origin main
-
-if [ $? -ne 0 ]; then
-    echo ""
-    echo "❌ Erro ao enviar para o GitHub."
-    exit 1
-fi
-
-echo ""
-echo "✅ GitHub atualizado!"
-echo ""
-
-echo "🌐 Deploy Vercel..."
-echo ""
-
-vercel --prod
-
-if [ $? -ne 0 ]; then
-    echo ""
-    echo "❌ Erro durante o deploy na Vercel."
-    exit 1
-fi
-
-echo ""
-echo "=========================================="
-echo "🎉 Deploy concluído com sucesso!"
-echo "=========================================="
-echo ""
-echo "📦 Build............. OK"
-echo "📤 GitHub............ OK"
-echo "🌐 Vercel............ OK"
-echo ""
-echo "Acesse seu projeto pelo domínio configurado"
-echo "ou pelo endereço fornecido pela Vercel."
-echo ""
+echo -e "${VERDE}✔ Atualização enviada com sucesso!${SEM_COR}"
+echo -e "${VERDE}✔ A Vercel deve iniciar o deploy automaticamente em instantes.${SEM_COR}"
+echo -e "${AMARELO}   Acompanhe em: https://vercel.com/williamdsg12-gmailcoms-projects/site-duartes/deployments${SEM_COR}"
