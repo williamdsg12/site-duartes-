@@ -212,7 +212,7 @@ VALUES (
     'usr-admin-01', 
     'Administrador Duarte''s', 
     'admin@duartes.com.br', 
-    'duartes1234', 
+    '$2b$10$ZR3CojuwoQafSW6aKrANqeTfuqLoxfwoaS.PP0K0tNA7DXFdQEryK', 
     'ADMIN'
 ) ON CONFLICT ("email") DO NOTHING;
 

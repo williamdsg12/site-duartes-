@@ -7,10 +7,10 @@ async function main() {
   console.log("Seeding database...");
 
   // 1. Admin User
-  const passwordHash = await bcrypt.hash("admin123", 10);
+  const passwordHash = await bcrypt.hash("duartes1234", 10);
   const admin = await prisma.user.upsert({
     where: { email: "admin@duartes.com.br" },
-    update: {},
+    update: { passwordHash },
     create: {
       name: "Administrador Duarte's",
       email: "admin@duartes.com.br",
