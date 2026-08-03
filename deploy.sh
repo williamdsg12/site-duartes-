@@ -45,6 +45,9 @@ git add -A
 echo -e "${AMARELO}==> Criando commit: \"${MENSAGEM}\"${SEM_COR}"
 git commit -m "$MENSAGEM"
 
+echo -e "${AMARELO}==> Sincronizando alterações com o GitHub...${SEM_COR}"
+git pull --rebase origin "$BRANCH"
+
 echo -e "${AMARELO}==> Enviando para o GitHub (origin/${BRANCH})...${SEM_COR}"
 git push origin "$BRANCH"
 
