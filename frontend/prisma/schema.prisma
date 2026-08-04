@@ -168,3 +168,81 @@ model AuditLog {
   details   String?
   createdAt DateTime @default(now())
 }
+
+model Quotation {
+  id               String          @id @default(uuid())
+  code             String          @unique @default("")
+  customerName     String
+  cpfCnpj          String?
+  customerPhone    String?
+  customerWhatsapp String?
+  customerEmail    String?
+  customerAddress  String?
+  customerCity     String?         @default("Paranavaí")
+  customerState    String?         @default("PR")
+  customerCep      String?
+  notes            String?
+  subtotal         Float           @default(0)
+  discount         Float           @default(0)
+  total            Float           @default(0)
+  paymentMethod    String          @default("PIX")
+  expirationDate   String?
+  status           String          @default("PENDING") // PENDING, APPROVED, COMPLETED, CANCELLED
+  items            QuotationItem[]
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+}
+
+model QuotationItem {
+  id          String    @id @default(uuid())
+  quotationId String
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  serviceName String
+  quantity    Int       @default(1)
+  unitPrice   Float     @default(0)
+  subtotal    Float     @default(0)
+  createdAt   DateTime  @default(now())
+}
+
+model Appointment {
+  id             String   @id @default(uuid())
+  customerName   String
+  serviceTitle   String
+  address        String
+  scheduledAt    DateTime
+  timeSlot       String   @default("08:00")
+  status         String   @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED
+  gcalEventId    String?
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model ClickEvent {
+  id         String   @id @default(uuid())
+  buttonName String   // "WhatsApp Hero", "WhatsApp Flutuante", "Ligar Agora", "Pedir Orçamento Header", etc.
+  pageUrl    String   @default("/")
+  device     String   @default("desktop") // desktop, mobile, tablet
+  origin     String   @default("Direto")  // Google, Instagram, Facebook, WhatsApp, Direto
+  createdAt  DateTime @default(now())
+}
+
+model VisitorLog {
+  id              String   @id @default(uuid())
+  ip              String   @default("127.0.0.1")
+  pageUrl         String   @default("/")
+  device          String   @default("desktop")
+  origin          String   @default("Direto")
+  userAgent       String?
+  sessionDuration Int      @default(30) // seconds
+  createdAt       DateTime @default(now())
+}
+
+model MonthlyGoal {
+  id          String   @id @default("default")
+  quotesGoal  Int      @default(50)
+  clientsGoal Int      @default(30)
+  revenueGoal Float    @default(20000)
+  updatedAt   DateTime @updatedAt
+}
+

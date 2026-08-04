@@ -25,10 +25,12 @@ import {
   Menu,
   X,
   UserCheck,
+  FileText,
 } from "lucide-react";
 
 const MENU_ITEMS = [
   { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+  { label: "Orçamentos", href: "/admin/quotations", icon: FileText },
   { label: "Informações Gerais", href: "/admin/general", icon: Info },
   { label: "Banner Principal", href: "/admin/hero", icon: Layers },
   { label: "Serviços", href: "/admin/services", icon: Wrench },

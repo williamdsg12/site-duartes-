@@ -59,6 +59,8 @@ export const viewport: Viewport = {
   themeColor: "#0B3C5D",
 };
 
+import ClickTrackerScript from "@/components/ClickTrackerScript";
+
 export default function RootLayout({
   children,
 }: {
@@ -96,7 +98,10 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <ClickTrackerScript />
+        {children}
+      </body>
     </html>
   );
 }
