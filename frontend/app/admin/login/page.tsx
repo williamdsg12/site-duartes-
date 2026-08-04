@@ -1,17 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Lock, Mail, ArrowRight, ShieldCheck, Loader2, Eye, EyeOff } from "lucide-react";
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("admin@duartes.com.br");
-  const [password, setPassword] = useState("duartes1234");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Ensure fields are completely empty on mount to prevent browser pre-fill
+  useEffect(() => {
+    setEmail("");
+    setPassword("");
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,7 +73,11 @@ export default function AdminLoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <form onSubmit={handleSubmit} autoComplete="off" className="mt-6 space-y-4">
+            {/* Dummy hidden inputs to prevent aggressive browser autofill */}
+            <input type="text" name="prevent_autofill_email" className="hidden" tabIndex={-1} aria-hidden="true" />
+            <input type="password" name="prevent_autofill_pass" className="hidden" tabIndex={-1} aria-hidden="true" />
+
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
                 E-mail
@@ -77,9 +87,12 @@ export default function AdminLoginPage() {
                 <input
                   type="email"
                   required
+                  autoComplete="new-password"
+                  autoCorrect="off"
+                  autoCapitalize="none"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="seu@email.com"
+                  placeholder="admin@duartes.com.br"
                   className="w-full rounded-xl border border-white/20 bg-white/5 py-3 pl-11 pr-4 text-sm text-white placeholder-slate-400 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
                 />
               </div>
@@ -94,6 +107,9 @@ export default function AdminLoginPage() {
                 <input
                   type={showPassword ? "text" : "password"}
                   required
+                  autoComplete="new-password"
+                  autoCorrect="off"
+                  autoCapitalize="none"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
@@ -133,7 +149,7 @@ export default function AdminLoginPage() {
 
           <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between text-xs text-slate-400">
             <span className="flex items-center gap-1.5">
-              <ShieldCheck size={14} className="text-emerald-400" /> Conexão Criptografada
+              <ShieldCheck size={14} className="text-emerald-400" /> Conexão Criptografada (Sessão Única)
             </span>
             <span>v1.0 CMS</span>
           </div>

@@ -3,6 +3,27 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { signToken, logAudit } from "@/lib/auth";
 
+function parseUserAgent(uaString: string) {
+  let browser = "Navegador Desconhecido";
+  let os = "OS Desconhecido";
+
+  if (uaString.includes("Firefox")) browser = "Mozilla Firefox";
+  else if (uaString.includes("SamsungBrowser")) browser = "Samsung Internet";
+  else if (uaString.includes("Opera") || uaString.includes("OPR")) browser = "Opera";
+  else if (uaString.includes("Edge") || uaString.includes("Edg")) browser = "Microsoft Edge";
+  else if (uaString.includes("Chrome")) browser = "Google Chrome";
+  else if (uaString.includes("Safari")) browser = "Apple Safari";
+
+  if (uaString.includes("Windows NT 10.0")) os = "Windows 11/10";
+  else if (uaString.includes("Windows")) os = "Windows";
+  else if (uaString.includes("Android")) os = "Android";
+  else if (uaString.includes("iPhone") || uaString.includes("iPad")) os = "iOS";
+  else if (uaString.includes("Mac OS")) os = "macOS";
+  else if (uaString.includes("Linux")) os = "Linux";
+
+  return `${browser} no ${os}`;
+}
+
 export async function POST(req: Request) {
   try {
     const { email, password } = await req.json();
@@ -27,7 +48,12 @@ export async function POST(req: Request) {
     }
 
     let isValid = false;
-    if (user.passwordHash && (user.passwordHash.startsWith("$2a$") || user.passwordHash.startsWith("$2b$") || user.passwordHash.startsWith("$2y$"))) {
+    if (
+      user.passwordHash &&
+      (user.passwordHash.startsWith("$2a$") ||
+        user.passwordHash.startsWith("$2b$") ||
+        user.passwordHash.startsWith("$2y$"))
+    ) {
       try {
         isValid = await bcrypt.compare(password, user.passwordHash);
       } catch (e) {
@@ -46,6 +72,25 @@ export async function POST(req: Request) {
       );
     }
 
+    // Capture Client IP & User Agent
+    const headers = req.headers;
+    const ip =
+      headers.get("x-forwarded-for")?.split(",")[0] ||
+      headers.get("x-real-ip") ||
+      "127.0.0.1";
+    const userAgent = headers.get("user-agent") || "";
+    const parsedDevice = parseUserAgent(userAgent);
+
+    // Update user login history (previousLoginAt & lastLoginAt)
+    const now = new Date();
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        previousLoginAt: user.lastLoginAt || now,
+        lastLoginAt: now,
+      },
+    });
+
     const token = signToken({
       userId: user.id,
       email: user.email,
@@ -60,18 +105,24 @@ export async function POST(req: Request) {
         name: user.name,
         email: user.email,
         role: user.role,
+        lastLoginAt: user.lastLoginAt,
+        previousLoginAt: user.previousLoginAt,
       },
     });
 
+    // SESSION COOKIE (maxAge: undefined -> deleted when browser closes!)
     response.cookies.set("duartes_admin_token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24 * 7,
+      maxAge: undefined,
     });
 
-    logAudit("LOGIN", user.id, user.email, "Login realizado com sucesso").catch(() => {});
+    // Disable caching
+    response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
+
+    logAudit("LOGIN", user.id, user.email, ip, parsedDevice).catch(() => {});
 
     return response;
   } catch (error: any) {

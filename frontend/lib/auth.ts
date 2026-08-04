@@ -14,7 +14,8 @@ export interface TokenPayload {
 }
 
 export function signToken(payload: TokenPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
+  // Session token - 8 hours max validity
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: "8h" });
 }
 
 export function verifyToken(token: string): TokenPayload | null {
@@ -37,7 +38,15 @@ export async function getSessionUser() {
     const user = await prisma.user
       .findUnique({
         where: { id: payload.userId },
-        select: { id: true, name: true, email: true, role: true, createdAt: true },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          lastLoginAt: true,
+          previousLoginAt: true,
+          createdAt: true,
+        },
       })
       .catch(() => null);
 
@@ -55,7 +64,7 @@ export async function setAuthCookie(token: string) {
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: undefined, // Session Cookie - destroyed when tab/browser closes!
     });
   } catch (e) {
     console.error("setAuthCookie error:", e);
@@ -71,19 +80,27 @@ export async function clearAuthCookie() {
       sameSite: "lax",
       path: "/",
       maxAge: 0,
+      expires: new Date(0),
     });
   } catch (e) {
     console.error("clearAuthCookie error:", e);
   }
 }
 
-export async function logAudit(action: string, userId?: string, email?: string, details?: string) {
+export async function logAudit(
+  action: string,
+  userId?: string,
+  email?: string,
+  ip?: string,
+  details?: string
+) {
   try {
     await prisma.auditLog.create({
       data: {
         action,
         userId: userId || null,
         userEmail: email || null,
+        ip: ip || "127.0.0.1",
         details: details || null,
       },
     });

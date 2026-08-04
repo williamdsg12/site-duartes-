@@ -9,14 +9,16 @@ generator client {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  name         String
-  email        String   @unique
-  passwordHash String
-  role         String   @default("ADMIN")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  logs         AuditLog[]
+  id              String    @id @default(uuid())
+  name            String
+  email           String    @unique
+  passwordHash    String
+  role            String    @default("ADMIN")
+  lastLoginAt     DateTime?
+  previousLoginAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  logs            AuditLog[]
 }
 
 model SiteInfo {

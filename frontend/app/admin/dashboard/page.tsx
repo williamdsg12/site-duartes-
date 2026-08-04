@@ -34,6 +34,8 @@ import {
   FileSpreadsheet,
   Database,
   Activity,
+  ShieldCheck,
+  UserCheck,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -58,6 +60,7 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [logs, setLogs] = useState<any[]>([]);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Modals
   const [showQuotationModal, setShowQuotationModal] = useState(false);
@@ -75,12 +78,18 @@ export default function AdminDashboardPage() {
   const fetchDashboardData = async () => {
     setRefreshing(true);
     try {
-      const [dashRes, logsRes] = await Promise.all([
+      const [dashRes, logsRes, meRes] = await Promise.all([
         fetch("/api/admin/dashboard"),
         fetch("/api/admin/logs"),
+        fetch("/api/auth/me"),
       ]);
       const dashData = await dashRes.json();
       const auditLogs = await logsRes.json();
+      const meData = await meRes.json();
+
+      if (meData.authenticated) {
+        setCurrentUser(meData.user);
+      }
 
       setData(dashData);
       if (dashData?.goals) {
@@ -121,6 +130,48 @@ export default function AdminDashboardPage() {
     }
   };
 
+  // Time-based & Session-based Greeting Calculation
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Bom dia ☀️";
+    if (hour < 18) return "Boa tarde 🌤️";
+    return "Boa noite 🌙";
+  };
+
+  const userName = currentUser?.name ? currentUser.name.split(" ")[0] : "Duarte";
+
+  const isFirstLoginToday = () => {
+    if (!currentUser?.previousLoginAt) return true;
+    const prev = new Date(currentUser.previousLoginAt);
+    const today = new Date();
+    return (
+      prev.getDate() !== today.getDate() ||
+      prev.getMonth() !== today.getMonth() ||
+      prev.getFullYear() !== today.getFullYear()
+    );
+  };
+
+  const welcomeSubtext = isFirstLoginToday()
+    ? `Seja bem-vindo, ${userName}! Desejamos um excelente trabalho hoje.`
+    : `Que bom te ver novamente, ${userName}! Tenha um ótimo restante de trabalho.`;
+
+  const formatLastAccess = () => {
+    const dt = currentUser?.previousLoginAt || currentUser?.lastLoginAt;
+    if (!dt) return "Primeiro acesso";
+    const dateObj = new Date(dt);
+    const today = new Date();
+
+    const isToday =
+      dateObj.getDate() === today.getDate() &&
+      dateObj.getMonth() === today.getMonth() &&
+      dateObj.getFullYear() === today.getFullYear();
+
+    const timeStr = dateObj.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
+    if (isToday) return `Hoje às ${timeStr}`;
+    return `${dateObj.toLocaleDateString("pt-BR")} às ${timeStr}`;
+  };
+
   const executive = data?.executive || {
     visitorsToday: { unique: 0, total: 0, yesterdayDiffPercent: 0 },
     quotations: { todayCount: 0, weekCount: 0, monthCount: 0 },
@@ -134,8 +185,6 @@ export default function AdminDashboardPage() {
 
   const goals = data?.goals || goalsInput;
   const recentQuotes = data?.recentQuotations || [];
-  const recentApps = data?.recentAppointments || [];
-  const clickMap = data?.clickMap || [];
 
   // Charts
   const visitsTrend = data?.charts?.visitsTrend || [
@@ -158,25 +207,32 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-8 pb-12">
-      {/* 🚀 Header Principal Executivo */}
+      {/* 🚀 Header Principal Executivo com Saudação Personalizada */}
       <div className="rounded-3xl bg-gradient-to-r from-[#0B3C5D] via-[#0092E4] to-[#072A42] p-8 text-white shadow-2xl relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="relative z-10 space-y-2">
+          {/* Greeting Badge */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 text-xs font-bold uppercase tracking-wider border border-amber-400/30">
-              <Sparkles size={13} /> PAINEL EXECUTIVO DE GESTÃO
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-400/20 text-amber-300 text-xs font-black tracking-wider border border-amber-400/30">
+              <Sparkles size={14} /> Olá, {userName}! {getGreeting()}
             </span>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-500/30">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              Banco PostgreSQL Sincronizado - Dados 100% Reais
+              Sessão Única Ativa
             </span>
           </div>
 
           <h1 className="font-heading text-3xl sm:text-4xl font-black tracking-tight text-white">
             Painel Executivo Duarte&apos;s Limpezas
           </h1>
-          <p className="text-white/80 text-xs sm:text-sm max-w-2xl font-medium">
-            Indicadores comerciais reais, emissão de orçamentos ERP, histórico de acessos e monitoramento operacional em tempo real.
+          <p className="text-white/90 text-xs sm:text-sm max-w-2xl font-medium leading-relaxed">
+            {welcomeSubtext}
           </p>
+
+          {/* Last Access Display */}
+          <div className="pt-2 flex items-center gap-2 text-xs font-semibold text-white/70">
+            <Clock size={14} className="text-amber-300" />
+            <span>Último acesso: <strong className="text-white font-extrabold">{formatLastAccess()}</strong></span>
+          </div>
         </div>
 
         <div className="relative z-10 flex flex-wrap items-center gap-3">
@@ -201,7 +257,7 @@ export default function AdminDashboardPage() {
         <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-cyan-400/10 rounded-full blur-3xl pointer-events-none" />
       </div>
 
-      {/* 📊 1. GRUPO DE 8 INDICADORES EXECUTIVOS EM TEMPO REAL (DADOS REAIS DO BANCO) */}
+      {/* 📊 1. GRUPO DE 8 INDICADORES EXECUTIVOS EM TEMPO REAL */}
       <div className="space-y-4">
         <div className="flex justify-between items-center px-1">
           <h2 className="font-heading text-lg font-black text-[#0B3C5D] flex items-center gap-2">
