@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { UserPlus, Shield, Trash2, X, Loader2, Check } from "lucide-react";
+import { UserPlus, Shield, Trash2, Edit, X, Loader2, Check } from "lucide-react";
 
 interface User {
   id: string;
@@ -14,38 +14,68 @@ interface User {
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Modal State
   const [modalOpen, setModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+
+  // Form State
   const [form, setForm] = useState({ name: "", email: "", password: "", role: "ADMIN" });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   const fetchUsers = async () => {
-    const res = await fetch("/api/admin/users");
-    const data = await res.json();
-    if (Array.isArray(data)) setUsers(data);
-    setLoading(false);
+    try {
+      const res = await fetch("/api/admin/users");
+      const data = await res.json();
+      if (Array.isArray(data)) setUsers(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     fetchUsers();
   }, []);
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleOpenCreate = () => {
+    setEditingUser(null);
+    setForm({ name: "", email: "", password: "", role: "ADMIN" });
+    setError("");
+    setModalOpen(true);
+  };
+
+  const handleOpenEdit = (user: User) => {
+    setEditingUser(user);
+    setForm({ name: user.name, email: user.email, password: "", role: user.role || "ADMIN" });
+    setError("");
+    setModalOpen(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     setError("");
 
     try {
-      const res = await fetch("/api/admin/users", {
-        method: "POST",
+      const isEdit = !!editingUser;
+      const url = "/api/admin/users";
+      const method = isEdit ? "PUT" : "POST";
+      const payload = isEdit ? { id: editingUser.id, ...form } : form;
+
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Erro ao criar usuário");
+      if (!res.ok) throw new Error(data.error || "Erro ao salvar usuário");
 
       setModalOpen(false);
+      setEditingUser(null);
       setForm({ name: "", email: "", password: "", role: "ADMIN" });
       fetchUsers();
     } catch (err: any) {
@@ -84,10 +114,12 @@ export default function AdminUsersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="font-heading text-2xl font-bold text-slate-900">Usuários &amp; Permissões</h1>
-          <p className="text-sm text-slate-500">Gerencie administradores e editores autorizados a acessar o painel.</p>
+          <p className="text-sm text-slate-500">
+            Gerencie administradores e editores autorizados a acessar o painel administrativo.
+          </p>
         </div>
         <button
-          onClick={() => setModalOpen(true)}
+          onClick={handleOpenCreate}
           className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0B3C5D] px-5 py-3 text-sm font-bold text-white shadow-md hover:bg-[#072A42] transition-colors"
         >
           <UserPlus size={18} /> Novo Usuário
@@ -110,7 +142,7 @@ export default function AdminUsersPage() {
               {users.map((u) => (
                 <tr key={u.id} className="hover:bg-slate-50/50">
                   <td className="p-4 pl-6 font-bold text-slate-900">{u.name}</td>
-                  <td className="p-4 text-slate-600">{u.email}</td>
+                  <td className="p-4 text-slate-600 font-mono text-xs">{u.email}</td>
                   <td className="p-4">
                     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold">
                       <Shield size={12} /> {u.role}
@@ -120,12 +152,23 @@ export default function AdminUsersPage() {
                     {new Date(u.createdAt).toLocaleDateString("pt-BR")}
                   </td>
                   <td className="p-4 pr-6 text-right">
-                    <button
-                      onClick={() => handleDelete(u.id)}
-                      className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button
+                        onClick={() => handleOpenEdit(u)}
+                        className="p-1.5 text-amber-600 hover:text-amber-800 hover:bg-amber-50 rounded-lg transition-colors"
+                        title="Editar Informações do Usuário"
+                      >
+                        <Edit size={18} />
+                      </button>
+
+                      <button
+                        onClick={() => handleDelete(u.id)}
+                        className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Excluir Usuário"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -134,11 +177,14 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
+      {/* Modal de Criação / Edição de Usuário */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
           <div className="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl space-y-5">
             <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="font-heading text-xl font-bold text-slate-900">Novo Administrador</h3>
+              <h3 className="font-heading text-xl font-bold text-slate-900">
+                {editingUser ? `Editar Usuário: ${editingUser.name}` : "Novo Administrador"}
+              </h3>
               <button onClick={() => setModalOpen(false)} className="text-slate-400 hover:text-slate-600">
                 <X size={20} />
               </button>
@@ -148,36 +194,41 @@ export default function AdminUsersPage() {
               <div className="p-3 rounded-xl bg-red-50 text-red-700 text-xs border border-red-200">{error}</div>
             )}
 
-            <form onSubmit={handleCreate} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Nome Completo</label>
+                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Nome Completo *</label>
                 <input
                   type="text"
                   required
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  placeholder="Ex: Rodrigo Duarte"
                   className="w-full rounded-xl border border-slate-300 p-3 text-sm focus:border-[#0B3C5D] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">E-mail</label>
+                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">E-mail *</label>
                 <input
                   type="email"
                   required
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  placeholder="usuario@duartes.com.br"
                   className="w-full rounded-xl border border-slate-300 p-3 text-sm focus:border-[#0B3C5D] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">Senha</label>
+                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+                  {editingUser ? "Nova Senha (Opcional)" : "Senha *"}
+                </label>
                 <input
                   type="password"
-                  required
+                  required={!editingUser}
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  placeholder={editingUser ? "Deixe em branco para manter a senha atual" : "••••••••"}
                   className="w-full rounded-xl border border-slate-300 p-3 text-sm focus:border-[#0B3C5D] focus:outline-none"
                 />
               </div>
@@ -207,7 +258,7 @@ export default function AdminUsersPage() {
                   disabled={saving}
                   className="px-6 py-2.5 rounded-xl bg-[#0B3C5D] text-sm font-bold text-white shadow-md hover:bg-[#072A42] transition-colors"
                 >
-                  {saving ? "Criando..." : "Criar Usuário"}
+                  {saving ? "Salvando..." : editingUser ? "Salvar Alterações" : "Criar Usuário"}
                 </button>
               </div>
             </form>
