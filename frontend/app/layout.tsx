@@ -60,6 +60,7 @@ export const viewport: Viewport = {
 };
 
 import ClickTrackerScript from "@/components/ClickTrackerScript";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export default function RootLayout({
   children,
@@ -101,6 +102,7 @@ export default function RootLayout({
       <body>
         <ClickTrackerScript />
         {children}
+        <SpeedInsights />
       </body>
     </html>
   );

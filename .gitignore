@@ -90,3 +90,21 @@ frontend/node_modules/
 
 # Vercel
 frontend/.vercel/
+
+# Variáveis de ambiente
+.env
+.env.local
+.env.development
+.env.development.local
+.env.production
+.env.production.local
+.env.test
+.env.test.local
+
+# Frontend
+frontend/.env
+frontend/.env.local
+frontend/.env.development
+frontend/.env.development.local
+frontend/.env.production
+frontend/.env.production.local

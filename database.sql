@@ -1,27 +1,29 @@
 -- =============================================================================
--- SQL SCHEMA AND INITIAL SEED DATA FOR DUARTE'S LIMPEZAS SITE
--- Compatible with PostgreSQL & MySQL (with minor type adjustments if needed)
+-- SQL COMPLETO PARA O SUPABASE - DUARTE'S LIMPEZAS, DESENTUPIDORA E MANUTENÇÕES
+-- Compatível 100% com PostgreSQL / Supabase SQL Editor
 -- =============================================================================
 
--- Enable UUID extension if PostgreSQL
+-- 1. Habilitar extensões necessárias
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- -----------------------------------------------------------------------------
--- 1. TABLE: User (Usuários do Painel Administrativo)
+-- 2. CRIAÇÃO DAS TABELAS
 -- -----------------------------------------------------------------------------
+
+-- Tabela: User (Usuários do Painel Administrativo)
 CREATE TABLE IF NOT EXISTS "User" (
     "id" VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
     "name" VARCHAR(255) NOT NULL,
     "email" VARCHAR(255) UNIQUE NOT NULL,
     "passwordHash" VARCHAR(255) NOT NULL,
     "role" VARCHAR(50) NOT NULL DEFAULT 'ADMIN',
+    "lastLoginAt" TIMESTAMP WITH TIME ZONE,
+    "previousLoginAt" TIMESTAMP WITH TIME ZONE,
     "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- -----------------------------------------------------------------------------
--- 2. TABLE: SiteInfo (Informações da Empresa e Contato)
--- -----------------------------------------------------------------------------
+-- Tabela: SiteInfo (Informações da Empresa e Contato)
 CREATE TABLE IF NOT EXISTS "SiteInfo" (
     "id" VARCHAR(50) PRIMARY KEY DEFAULT 'default',
     "companyName" VARCHAR(255) NOT NULL DEFAULT 'Duarte''s Limpezas, Desentupidora e Manutenções',
@@ -39,9 +41,7 @@ CREATE TABLE IF NOT EXISTS "SiteInfo" (
     "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- -----------------------------------------------------------------------------
--- 3. TABLE: HeroBanner (Configurações da Seção Principal do Site)
--- -----------------------------------------------------------------------------
+-- Tabela: HeroBanner (Configurações do Banner Principal)
 CREATE TABLE IF NOT EXISTS "HeroBanner" (
     "id" VARCHAR(50) PRIMARY KEY DEFAULT 'default',
     "badgeText" VARCHAR(255) NOT NULL DEFAULT 'Há 5 anos em Paranavaí e Região',
@@ -58,9 +58,7 @@ CREATE TABLE IF NOT EXISTS "HeroBanner" (
     "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- -----------------------------------------------------------------------------
--- 4. TABLE: ServiceItem (Serviços Oferecidos)
--- -----------------------------------------------------------------------------
+-- Tabela: ServiceItem (Serviços Oferecidos)
 CREATE TABLE IF NOT EXISTS "ServiceItem" (
     "id" VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
     "title" VARCHAR(255) NOT NULL,
@@ -74,9 +72,7 @@ CREATE TABLE IF NOT EXISTS "ServiceItem" (
     "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- -----------------------------------------------------------------------------
--- 5. TABLE: GalleryMedia (Galeria de Fotos e Projetos)
--- -----------------------------------------------------------------------------
+-- Tabela: GalleryMedia (Galeria de Fotos)
 CREATE TABLE IF NOT EXISTS "GalleryMedia" (
     "id" VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
     "title" VARCHAR(255),
@@ -90,9 +86,7 @@ CREATE TABLE IF NOT EXISTS "GalleryMedia" (
     "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- -----------------------------------------------------------------------------
--- 6. TABLE: TestimonialItem (Depoimentos e Avaliações de Clientes)
--- -----------------------------------------------------------------------------
+-- Tabela: TestimonialItem (Depoimentos)
 CREATE TABLE IF NOT EXISTS "TestimonialItem" (
     "id" VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
     "name" VARCHAR(255) NOT NULL,
@@ -106,9 +100,7 @@ CREATE TABLE IF NOT EXISTS "TestimonialItem" (
     "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- -----------------------------------------------------------------------------
--- 7. TABLE: FaqItem (Perguntas Frequentes)
--- -----------------------------------------------------------------------------
+-- Tabela: FaqItem (Perguntas Frequentes)
 CREATE TABLE IF NOT EXISTS "FaqItem" (
     "id" VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
     "question" TEXT NOT NULL,
@@ -119,22 +111,18 @@ CREATE TABLE IF NOT EXISTS "FaqItem" (
     "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- -----------------------------------------------------------------------------
--- 8. TABLE: ServiceAreaConfig (Configuração de Região Atendida)
--- -----------------------------------------------------------------------------
+-- Tabela: ServiceAreaConfig (Área de Atendimento)
 CREATE TABLE IF NOT EXISTS "ServiceAreaConfig" (
     "id" VARCHAR(50) PRIMARY KEY DEFAULT 'default',
     "badgeText" VARCHAR(255) NOT NULL DEFAULT 'Área de Atendimento',
     "title" VARCHAR(255) NOT NULL DEFAULT 'Atendemos Paranavaí e toda a Região Noroeste do Paraná',
     "description" TEXT NOT NULL,
-    "citiesJson" TEXT NOT NULL,
+    "citiesJson" TEXT NOT NULL DEFAULT '["Paranavaí","Nova Esperança","Alto Paraná","Mandaguaçu","Loanda","Terra Rica","Cruzeiro do Sul","Paraíso do Norte","Tamboara","Amaporã"]',
     "mapUrl" TEXT NOT NULL,
     "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- -----------------------------------------------------------------------------
--- 9. TABLE: SocialConfig (Links de Redes Sociais)
--- -----------------------------------------------------------------------------
+-- Tabela: SocialConfig (Redes Sociais)
 CREATE TABLE IF NOT EXISTS "SocialConfig" (
     "id" VARCHAR(50) PRIMARY KEY DEFAULT 'default',
     "instagram" VARCHAR(500) DEFAULT 'https://instagram.com/duarteslimpezacaixadeagua',
@@ -153,9 +141,7 @@ CREATE TABLE IF NOT EXISTS "SocialConfig" (
     "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- -----------------------------------------------------------------------------
--- 10. TABLE: SeoConfig (Configurações de SEO e Meta Tags)
--- -----------------------------------------------------------------------------
+-- Tabela: SeoConfig (SEO e Meta Tags)
 CREATE TABLE IF NOT EXISTS "SeoConfig" (
     "id" VARCHAR(50) PRIMARY KEY DEFAULT 'default',
     "metaTitle" VARCHAR(255) NOT NULL DEFAULT 'Duarte''s Limpezas | Desentupidora em Paranavaí',
@@ -171,9 +157,7 @@ CREATE TABLE IF NOT EXISTS "SeoConfig" (
     "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- -----------------------------------------------------------------------------
--- 11. TABLE: SiteSettings (Aparência, Cores e Logotipos)
--- -----------------------------------------------------------------------------
+-- Tabela: SiteSettings (Configurações Gerais e Aparência)
 CREATE TABLE IF NOT EXISTS "SiteSettings" (
     "id" VARCHAR(50) PRIMARY KEY DEFAULT 'default',
     "logoUrl" VARCHAR(500) NOT NULL DEFAULT '/assets/logo.png',
@@ -188,9 +172,7 @@ CREATE TABLE IF NOT EXISTS "SiteSettings" (
     "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- -----------------------------------------------------------------------------
--- 12. TABLE: AuditLog (Logs de Auditoria e Ações dos Usuários)
--- -----------------------------------------------------------------------------
+-- Tabela: AuditLog (Logs de Auditoria)
 CREATE TABLE IF NOT EXISTS "AuditLog" (
     "id" VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
     "action" VARCHAR(255) NOT NULL,
@@ -202,11 +184,93 @@ CREATE TABLE IF NOT EXISTS "AuditLog" (
     CONSTRAINT fk_audit_log_user FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL
 );
 
--- =============================================================================
--- INITIAL SEED DATA (DADOS INICIAIS DO SITE)
--- =============================================================================
+-- Tabela: Quotation (Orçamentos)
+CREATE TABLE IF NOT EXISTS "Quotation" (
+    "id" VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "code" VARCHAR(50) UNIQUE DEFAULT '',
+    "customerName" VARCHAR(255) NOT NULL,
+    "cpfCnpj" VARCHAR(50),
+    "customerPhone" VARCHAR(50),
+    "customerWhatsapp" VARCHAR(50),
+    "customerEmail" VARCHAR(255),
+    "customerAddress" TEXT,
+    "customerCity" VARCHAR(100) DEFAULT 'Paranavaí',
+    "customerState" VARCHAR(50) DEFAULT 'PR',
+    "customerCep" VARCHAR(20),
+    "notes" TEXT,
+    "subtotal" DOUBLE PRECISION DEFAULT 0,
+    "discount" DOUBLE PRECISION DEFAULT 0,
+    "total" DOUBLE PRECISION DEFAULT 0,
+    "paymentMethod" VARCHAR(50) DEFAULT 'PIX',
+    "expirationDate" VARCHAR(50),
+    "status" VARCHAR(50) DEFAULT 'PENDING',
+    "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
 
--- 1. Usuário Administrador Padrão (Senha padrão: duartes1234)
+-- Tabela: QuotationItem (Itens do Orçamento)
+CREATE TABLE IF NOT EXISTS "QuotationItem" (
+    "id" VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "quotationId" VARCHAR(36) NOT NULL,
+    "serviceName" VARCHAR(255) NOT NULL,
+    "quantity" INT DEFAULT 1,
+    "unitPrice" DOUBLE PRECISION DEFAULT 0,
+    "subtotal" DOUBLE PRECISION DEFAULT 0,
+    "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_quotation_item FOREIGN KEY ("quotationId") REFERENCES "Quotation"("id") ON DELETE CASCADE
+);
+
+-- Tabela: Appointment (Agendamentos)
+CREATE TABLE IF NOT EXISTS "Appointment" (
+    "id" VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "customerName" VARCHAR(255) NOT NULL,
+    "serviceTitle" VARCHAR(255) NOT NULL,
+    "address" TEXT NOT NULL,
+    "scheduledAt" TIMESTAMP WITH TIME ZONE NOT NULL,
+    "timeSlot" VARCHAR(50) DEFAULT '08:00',
+    "status" VARCHAR(50) DEFAULT 'SCHEDULED',
+    "gcalEventId" VARCHAR(255),
+    "notes" TEXT,
+    "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabela: ClickEvent (Cliques e Conversões)
+CREATE TABLE IF NOT EXISTS "ClickEvent" (
+    "id" VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "buttonName" VARCHAR(255) NOT NULL,
+    "pageUrl" TEXT DEFAULT '/',
+    "device" VARCHAR(50) DEFAULT 'desktop',
+    "origin" VARCHAR(100) DEFAULT 'Direto',
+    "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabela: VisitorLog (Logs de Visitas)
+CREATE TABLE IF NOT EXISTS "VisitorLog" (
+    "id" VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "ip" VARCHAR(50) DEFAULT '127.0.0.1',
+    "pageUrl" TEXT DEFAULT '/',
+    "device" VARCHAR(50) DEFAULT 'desktop',
+    "origin" VARCHAR(100) DEFAULT 'Direto',
+    "userAgent" TEXT,
+    "sessionDuration" INT DEFAULT 30,
+    "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabela: MonthlyGoal (Metas Mensais do Dashboard)
+CREATE TABLE IF NOT EXISTS "MonthlyGoal" (
+    "id" VARCHAR(50) PRIMARY KEY DEFAULT 'default',
+    "quotesGoal" INT DEFAULT 50,
+    "clientsGoal" INT DEFAULT 30,
+    "revenueGoal" DOUBLE PRECISION DEFAULT 20000,
+    "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- -----------------------------------------------------------------------------
+-- 3. DADOS INICIAIS (SEED DATA)
+-- -----------------------------------------------------------------------------
+
+-- 1. Usuário Administrador (Login: admin@duartes.com.br | Senha padrão: duartes1234)
 INSERT INTO "User" ("id", "name", "email", "passwordHash", "role") 
 VALUES (
     'usr-admin-01', 
@@ -216,7 +280,7 @@ VALUES (
     'ADMIN'
 ) ON CONFLICT ("email") DO NOTHING;
 
--- 2. Informações do Site
+-- 2. Informações da Empresa
 INSERT INTO "SiteInfo" ("id", "companyName", "slogan", "description", "aboutText", "phoneDisplay", "phoneRaw", "email", "address", "city", "cep", "hours", "region")
 VALUES (
     'default',
@@ -234,7 +298,7 @@ VALUES (
     'Paranavaí e toda Região Noroeste do Paraná'
 ) ON CONFLICT ("id") DO NOTHING;
 
--- 3. Hero Banner
+-- 3. Banner Principal (Hero)
 INSERT INTO "HeroBanner" ("id", "badgeText", "titleLine1", "titleLine2", "titleLine3", "subtitle", "videoUrl", "posterUrl", "button1Text", "button1Link", "button2Text", "button2Link")
 VALUES (
     'default',
@@ -251,7 +315,7 @@ VALUES (
     'https://wa.me/5544997069677?text=Ol%C3%A1!%20Vim%20pelo%20site%20da%20Duarte''s%20e%20gostaria%20de%20solicitar%20um%20or%C3%A7amento.'
 ) ON CONFLICT ("id") DO NOTHING;
 
--- 4. Serviços Principais
+-- 4. Serviços Oferecidos
 INSERT INTO "ServiceItem" ("id", "title", "description", "icon", "buttonText", "order", "active") VALUES
 ('srv-01', 'Limpeza de Caixa d''Água', 'Higienização completa com produtos adequados, garantindo água limpa e segura para sua família.', 'Droplets', 'Solicitar orçamento', 1, TRUE),
 ('srv-02', 'Desentupimento', 'Desentupimento de pias, ralos, vasos e tubulações com equipamentos profissionais.', 'Waves', 'Solicitar orçamento', 2, TRUE),
@@ -262,7 +326,7 @@ INSERT INTO "ServiceItem" ("id", "title", "description", "icon", "buttonText", "
 ('srv-07', 'Manutenção Elétrica', 'Instalações e reparos elétricos com segurança e mão de obra qualificada.', 'Zap', 'Solicitar orçamento', 7, TRUE)
 ON CONFLICT ("id") DO NOTHING;
 
--- 5. Galeria Inicial
+-- 5. Galeria de Fotos
 INSERT INTO "GalleryMedia" ("id", "src", "alt", "order", "active") VALUES
 ('gal-01', '/assets/gallery/g1.jpg', 'Caixa d''água elevada e veículo da Duarte''s', 1, TRUE),
 ('gal-02', '/assets/gallery/g2.jpg', 'Manutenção de boia e válvula em reservatório', 2, TRUE),
@@ -271,7 +335,7 @@ INSERT INTO "GalleryMedia" ("id", "src", "alt", "order", "active") VALUES
 ('gal-05', '/assets/gallery/g5.jpg', 'Inspeção interna de caixa d''água', 5, TRUE)
 ON CONFLICT ("id") DO NOTHING;
 
--- 6. Depoimentos de Clientes
+-- 6. Depoimentos
 INSERT INTO "TestimonialItem" ("id", "name", "role", "text", "rating", "order", "active") VALUES
 ('tst-01', 'Cliente Residencial', 'Paranavaí - PR', 'Excelente atendimento. Muito rápido e serviço impecável na limpeza da caixa d''água.', 5, 1, TRUE),
 ('tst-02', 'Síndico de Condomínio', 'Região Noroeste', 'Equipe pontual e profissional. Resolveram o desentupimento do prédio no mesmo dia.', 5, 2, TRUE),
@@ -293,12 +357,12 @@ INSERT INTO "ServiceAreaConfig" ("id", "badgeText", "title", "description", "cit
 ('default', 'Área de Atendimento', 'Atendemos Paranavaí e toda a Região Noroeste do Paraná', 'Nossa equipe se desloca com agilidade para atender residências, empresas e condomínios em toda a região.', '["Paranavaí","Nova Esperança","Alto Paraná","Mandaguaçu","Loanda","Terra Rica","Cruzeiro do Sul","Paraíso do Norte","Tamboara","Amaporã"]', 'https://www.google.com/maps?q=Paranava%C3%AD,PR&z=11&output=embed')
 ON CONFLICT ("id") DO NOTHING;
 
--- 9. Configurações de Redes Sociais
+-- 9. Redes Sociais
 INSERT INTO "SocialConfig" ("id", "instagram", "facebook", "whatsapp", "activeInsta", "activeFb", "activeWa") VALUES
 ('default', 'https://instagram.com/duarteslimpezacaixadeagua', 'https://facebook.com/duarteslimpezacaixadeagua', 'https://wa.me/5544997069677', TRUE, TRUE, TRUE)
 ON CONFLICT ("id") DO NOTHING;
 
--- 10. SEO Config
+-- 10. SEO
 INSERT INTO "SeoConfig" ("id", "metaTitle", "metaDescription", "keywords", "ogTitle", "ogDescription", "ogImage", "twitterCard", "canonicalUrl", "robots", "schemaLd") VALUES
 ('default', 'Duarte''s Limpezas | Desentupidora em Paranavaí', 'Empresa especializada em limpeza de caixa d''água, desentupimento, hidrojateamento, limpeza de fossa, caixa de gordura, dedetização e manutenção hidráulica e elétrica em Paranavaí e Região Noroeste do Paraná.', 'desentupidora Paranavaí, limpeza caixa d''água Paranavaí, hidrojateamento Paranavaí, limpeza caixa de gordura, limpeza de fossa, dedetização Paranavaí, manutenção hidráulica, manutenção elétrica', 'Duarte''s Limpezas | Desentupidora em Paranavaí', 'Limpeza de caixa d''água, desentupimento, hidrojateamento, dedetização e manutenção hidráulica e elétrica em Paranavaí e Região Noroeste.', '/assets/logo-hero.png', 'summary_large_image', 'https://manutencao-duartes.preview.emergentagent.com/', 'index, follow', '{"@context":"https://schema.org","@type":"LocalBusiness","name":"Duarte''s Limpezas, Desentupidora e Manutenções","image":"/assets/logo-hero.png","telephone":"+5544997069677","email":"duarteslimpezacaixadeagua@gmail.com","address":{"@type":"PostalAddress","streetAddress":"Av. Paulino Rech, 203","addressLocality":"Paranavaí","addressRegion":"PR","postalCode":"87702-430","addressCountry":"BR"},"areaServed":"Paranavaí e Região Noroeste do Paraná","openingHours":"Mo-Fr 08:00-18:00"}')
 ON CONFLICT ("id") DO NOTHING;
@@ -306,4 +370,9 @@ ON CONFLICT ("id") DO NOTHING;
 -- 11. Configurações Gerais do Site
 INSERT INTO "SiteSettings" ("id", "logoUrl", "logoHeroUrl", "faviconUrl", "primaryColor", "accentColor", "footerText", "copyrightText", "waButtonText", "callButtonText") VALUES
 ('default', '/assets/logo.png', '/assets/logo-hero.png', '/assets/logo.png', '#0B3C5D', '#FFC107', 'Há 5 anos oferecendo soluções completas em limpeza, desentupimento e manutenção.', '© 2026 Duarte''s Limpezas, Desentupidora e Manutenções. Todos os direitos reservados.', 'Orçamento Rápido', 'Ligar Agora')
+ON CONFLICT ("id") DO NOTHING;
+
+-- 12. Metas Mensais
+INSERT INTO "MonthlyGoal" ("id", "quotesGoal", "clientsGoal", "revenueGoal") VALUES
+('default', 50, 30, 20000)
 ON CONFLICT ("id") DO NOTHING;
