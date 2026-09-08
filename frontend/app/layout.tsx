@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "@/styles/globals.css";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://manutencao-duartes.preview.emergentagent.com"),
@@ -101,6 +102,7 @@ export default function RootLayout({
       <body>
         <ClickTrackerScript />
         {children}
+        <SpeedInsights />
       </body>
     </html>
   );
